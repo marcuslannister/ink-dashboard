@@ -96,7 +96,7 @@ The bridge service on the Mac will:
 1. Read Claude data from the OpenUsage local API.
 2. Calculate friendly reset text such as `Reset in 2h 48m`.
 3. Generate an old-browser-compatible HTML page.
-4. Listen on a configurable LAN address, such as `http://192.168.8.100:8787/`.
+4. Listen on a configurable LAN address, such as `http://192.168.0.10:8787/`.
 5. Refresh the browser every five minutes.
 6. Serve no credentials, tokens, transcripts, or raw OpenUsage data.
 
@@ -118,11 +118,12 @@ Expected location:
 /mnt/us/extensions/WebLaunch/
 ```
 
-Example `settings.js`:
+Example `settings.js`. Replace the address with your own — find it with
+`ipconfig getifaddr en0`:
 
 ```javascript
 var settings = {
-    url: 'http://192.168.8.100:8787/',
+    url: 'http://192.168.0.10:8787/',
     title: 'Ink Dashboard',
     hideStatusbar: true,
     enableWireless: true,
@@ -138,8 +139,12 @@ var settings = {
 - OpenUsage installed and successfully reading Claude usage
 - Kindle Touch connected to the same LAN
 - Kindle jailbreak compatible with its exact firmware
-- KUAL installed
-- WebLaunch installed
+- KUAL installed — *optional*, see below
+- WebLaunch installed — *optional*, see below
+
+KUAL and WebLaunch are not required to show the dashboard. The Kindle Touch has a
+built-in browser, and this page is already written for it. KUAL and WebLaunch only
+remove the browser toolbar and keep the screen awake. Version 1 works without them.
 
 Do not update the Kindle firmware before checking its current version. The correct jailbreak method depends on that version.
 
