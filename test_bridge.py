@@ -6,7 +6,7 @@ Run with: python3 test_bridge.py
 
 from datetime import datetime, timedelta, timezone
 
-from bridge import build_cards, format_reset, render
+from bridge import build_cards, current_provider, format_reset, render, REFRESH_SECONDS, PROVIDERS
 
 NOW = datetime(2026, 9, 5, 12, 0, 0, tzinfo=timezone.utc)
 
@@ -22,6 +22,13 @@ def test_format_reset():
     # A window that already lapsed must not render a negative countdown.
     assert format_reset(iso(hours=-1), NOW) == "Reset now"
     assert format_reset(None, NOW) == ""
+
+
+def test_current_provider():
+    # One full rotation must touch every configured provider exactly once, then repeat.
+    seen = [current_provider(now=i * REFRESH_SECONDS) for i in range(len(PROVIDERS))]
+    assert set(seen) == set(PROVIDERS)
+    assert current_provider(now=0) == current_provider(now=len(PROVIDERS) * REFRESH_SECONDS)
 
 
 def test_build_cards():
@@ -61,7 +68,7 @@ def test_render():
     )
     html = render(cards, stale, datetime(2026, 9, 5, 19, 30))
     assert "16%" in html and "width: 16%" in html
-    assert 'http-equiv="refresh" content="300"' in html
+    assert f'http-equiv="refresh" content="{REFRESH_SECONDS}"' in html
     # The Claude mark is inlined, so the Kindle never needs a second request.
     assert html.count('<img src="data:image/png;base64,') == len(cards)
     assert "http://" not in html and "https://" not in html
