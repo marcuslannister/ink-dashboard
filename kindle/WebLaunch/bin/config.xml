@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<widget xmlns="http://www.w3.org/ns/widgets"
+    xmlns:kindle="http://kindle.amazon.com/ns/widget-extensions"
+    id="com.PaulFreund.WebLaunch"
+    version="1.0"
+    viewmodes="application">
+    <name xml:lang="en">Ink Dashboard</name>
+    <content src="dash.html" />
+    <kindle:permissions>
+       <kindle:permission name="local-port-access"/>
+    </kindle:permissions>
+    <kindle:chrome>
+        <kindle:asset key="configureSearchBar" value="none"/>
+    </kindle:chrome>
+    <kindle:settings>
+        <kindle:setting name="internetRequired" value="no"/>
+    </kindle:settings>
+    <feature name="http://kindle.amazon.com/apis" required="true">
+        <param name="appmgr" value="yes"/>
+        <param name="dev" value="yes"/>
+        <param name="viewport" value="yes"/>
+    </feature>
+</widget>

@@ -14,8 +14,9 @@ Turn an old Kindle into an always-on e-ink display for AI usage information. The
 - **Community nickname:** K5
 - **Display:** 6-inch grayscale e-ink
 - **Native resolution:** 600 × 800
-- **Dashboard orientation:** Landscape, 800 × 600
-- **Connection:** Local Wi-Fi
+- **Dashboard orientation:** Portrait hold. The page is still 800 × 600 (two cards side by side); WebLaunch scales it to 600px so it fits without clipping.
+- **Firmware:** 5.3.7.3 (needed for Mesquite)
+- **Connection:** USBNetwork over USB ethernet, or local Wi-Fi
 
 ## Version 1 scope
 

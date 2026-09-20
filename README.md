@@ -18,8 +18,9 @@ Then run the bridge on the same Mac. It needs Python 3 and no packages:
 python3 bridge.py
 ```
 
-Open `http://<your-mac-lan-ip>:8787/` on the Kindle. Find the address with
-`ipconfig getifaddr en0`.
+Open `http://<your-mac-lan-ip>:8787/` on the Kindle, or use KUAL → WebLaunch.
+The extension lives in `kindle/WebLaunch/` (copy it to `/mnt/us/extensions/WebLaunch/` on firmware 5.3.7.3). Edit `USB_URL` / `LAN_URL` in `bin/start.sh` to match the Mac that runs the bridge.
+Find the LAN address with `ipconfig getifaddr en0`.
 
 ### Configuration
 
@@ -43,7 +44,7 @@ python3 test_bridge.py
 
 ## Status
 
-Early working version. The bridge runs and renders live Claude usage.
+Working on a jailbroken Kindle Touch 5.3.7.3 with KUAL and WebLaunch.
 Track progress on the [project board](../../projects) and [issues](../../issues).
 
 ## License

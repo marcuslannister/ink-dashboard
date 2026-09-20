@@ -1,0 +1,8 @@
+{
+	"items": [
+		{
+			"name": "WebLaunch",
+			"action": "bin/start.sh"
+		}
+	]
+}
