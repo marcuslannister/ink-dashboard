@@ -20,6 +20,7 @@ import time
 import urllib.request
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import parse_qs
 
 OPENUSAGE_URL = os.environ.get("INK_OPENUSAGE_URL", "http://127.0.0.1:6736/v1/limits")
 PROVIDERS = [p.strip() for p in os.environ.get("INK_PROVIDERS", "claude,codex").split(",") if p.strip()] or ["claude"]
@@ -157,20 +158,33 @@ td { width: 50%; vertical-align: top; padding: 20px;
 .msg { padding: 60px 20px; font-size: 32px; font-weight: bold; }
 """
 
+# The Kindle variant of the page: same markup, plus the scale and portrait
+# orientation WebLaunch's start.sh used to inject on the device. Serving it
+# from the bridge lets the native meta refresh update the page live instead
+# of leaving a launch-time snapshot on the Kindle.
+KINDLE_STYLE = (
+    "html{overflow:hidden}body{-webkit-transform:scale(0.75);-webkit-transform-origin:0 0;}"
+)
+KINDLE_SCRIPT = (
+    '<script type="text/javascript">'
+    'try{kindle.dev.setOrientation("portrait");}catch(e){}</script>'
+)
 
-def _page(body, mark=CLAUDE_MARK):
+
+def _page(body, mark=CLAUDE_MARK, kindle=False):
     return (
         "<!DOCTYPE html>\n<html><head>"
         '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
         f'<meta http-equiv="refresh" content="{REFRESH_SECONDS}">'
         f'<link rel="icon" href="{mark}">'
         "<title>Ink Dashboard</title>"
-        f"<style>{STYLE}</style>"
+        f"<style>{STYLE}{KINDLE_STYLE if kindle else ''}</style>"
+        f"{KINDLE_SCRIPT if kindle else ''}"
         f"</head><body>{body}</body></html>\n"
     )
 
 
-def render(cards, stale=False, now=None, provider="claude"):
+def render(cards, stale=False, now=None, provider="claude", kindle=False):
     now = now or datetime.now()
     mark = MARKS.get(provider, CLAUDE_MARK)
     cells = []
@@ -186,7 +200,7 @@ def render(cards, stale=False, now=None, provider="claude"):
             f'<div class="reset">{card["reset"]}</div></td>'
         )
     if not cells:
-        return _page(f'<div class="msg">No {provider.title()} data</div>', mark)
+        return _page(f'<div class="msg">No {provider.title()} data</div>', mark, kindle)
     footer = f"{provider.upper()} &middot; Updated " + now.strftime("%H:%M") + (
         " &middot; STALE" if stale else ""
     )
@@ -194,26 +208,30 @@ def render(cards, stale=False, now=None, provider="claude"):
         f"<table><tr>{''.join(cells)}</tr></table>"
         f'<div class="foot">{footer}</div>',
         mark,
+        kindle,
     )
 
 
-def render_error():
+def render_error(kindle=False):
     """Generic on purpose: the exception text can name internal URLs, the page is on the LAN."""
-    return _page('<div class="msg">No data from OpenUsage</div>')
+    return _page('<div class="msg">No data from OpenUsage</div>', kindle=kindle)
 
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path not in ("/", "/index.html"):
+        path, _, query = self.path.partition("?")
+        if path not in ("/", "/index.html"):
             self.send_error(404)
             return
+        # ?k=1 asks for the Kindle variant.
+        kindle = "k" in parse_qs(query)
         try:
             provider = current_provider()
             cards, stale = build_cards(fetch_limits(), provider)
-            html = render(cards, stale, provider=provider)
+            html = render(cards, stale, provider=provider, kindle=kindle)
         except Exception as error:  # a dead OpenUsage must not kill an always-on display
             print(f"openusage read failed: {error}", file=sys.stderr)
-            html = render_error()
+            html = render_error(kindle)
         body = html.encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")

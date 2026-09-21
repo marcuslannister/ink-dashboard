@@ -79,6 +79,21 @@ def test_render():
     assert "No Claude data" in render([], False, NOW)
 
 
+def test_render_kindle():
+    cards, _ = build_cards(
+        {"providers": {"claude": {"stale": False, "resources": {"session": {"used": 16}}}}},
+        "claude",
+        NOW,
+    )
+    kindle = render(cards, False, NOW, kindle=True)
+    # The Kindle variant carries the scale and orientation the device used to inject.
+    assert "-webkit-transform:scale(0.75)" in kindle
+    assert 'setOrientation("portrait")' in kindle
+    # The plain browser variant stays untouched.
+    plain = render(cards, False, NOW)
+    assert "-webkit-transform" not in plain and "setOrientation" not in plain
+
+
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_"):
