@@ -1,29 +1,25 @@
 #!/bin/sh
 # WebLaunch start for Kindle Touch 5.3.7.3 (Mesquite).
-# Fetches the bridge page, scales the 800x600 layout to 600px portrait, then starts the app.
+# Mesquite renders bin/dash.html (config.xml content). start.sh probes which
+# bridge address is reachable, then rewrites dash.html as a one-shot bootstrap
+# page that redirects to the live URL. The bridge serves the Kindle scaling at
+# /?k=1, and the page's own meta refresh keeps it updating every minute.
 LOG=/mnt/us/extensions/WebLaunch/run.log
-DIR=/mnt/us/extensions/WebLaunch/bin
+APP=/mnt/us/extensions/WebLaunch
 # USB ethernet host first, then LAN. Edit if the Mac address changes.
-USB_URL=http://192.168.15.201:8787/
-LAN_URL=http://192.168.8.4:8787/
+USB_URL=http://192.168.15.201:8787/?k=1
+LAN_URL=http://192.168.8.4:8787/?k=1
 exec > "$LOG" 2>&1
 echo "=== start ==="
-sqlite3 /var/local/appreg.db "update properties set value='/usr/bin/mesquite -l com.PaulFreund.WebLaunch -c /mnt/us/extensions/WebLaunch/bin/' where handlerId='com.PaulFreund.WebLaunch' and name='command';"
-inject() {
-	sed -e 's/<meta http-equiv="refresh" content="[0-9]*">//g' "$DIR/dash.next" > "$DIR/dash.html"
-	sed -i 's|<style>|<style>html{overflow:hidden}body{-webkit-transform:scale(0.75);-webkit-transform-origin:0 0;}|' "$DIR/dash.html"
-	sed -i 's|</head>|<script type="text/javascript">try{kindle.dev.setOrientation("portrait");}catch(e){}</script></head>|' "$DIR/dash.html"
-}
-if wget -O "$DIR/dash.next" "$USB_URL"; then
-	inject
-	echo "fetched usb"
-elif wget -O "$DIR/dash.next" "$LAN_URL"; then
-	inject
-	echo "fetched lan"
+sqlite3 /var/local/appreg.db "update properties set value='/usr/bin/mesquite -l com.PaulFreund.WebLaunch -c $APP/bin/' where handlerId='com.PaulFreund.WebLaunch' and name='command';"
+if wget -q -T 5 -O /dev/null "$USB_URL"; then
+	BRIDGE_URL="$USB_URL"
+	echo "using usb"
 else
-	echo "wget failed, using existing dash.html"
+	BRIDGE_URL="$LAN_URL"
+	echo "using lan"
 fi
-rm -f "$DIR/dash.next"
+printf '<!DOCTYPE html>\n<html><head><meta http-equiv="refresh" content="0; url=%s"></head><body></body></html>\n' "$BRIDGE_URL" > "$APP/bin/dash.html"
 lipc-set-prop com.lab126.appmgrd stop "app://com.PaulFreund.WebLaunch"
 sleep 1
 lipc-set-prop com.lab126.winmgr orientationLock U

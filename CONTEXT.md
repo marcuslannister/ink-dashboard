@@ -35,8 +35,9 @@ the footer. It does not hide the cards.
 
 ## Device terms
 
-**Kindle Touch** — the display. Model D01200, 4th generation, firmware 5.1.0.
-Its screen is 600 × 800, and the dashboard uses it in landscape, 800 × 600.
+**Kindle Touch** — the display. Model D01200, 4th generation, firmware 5.3.7.3.
+Its screen is 600 × 800 in portrait. The bridge serves the 800 × 600 page
+scaled to 0.75 for it at `/?k=1`.
 
 **K5** — the MobileRead nickname for the Kindle Touch generation. Jailbreak and
 MKK packages use this name, not "Touch".

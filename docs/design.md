@@ -111,28 +111,11 @@ Browser refresh:
 
 ## Kindle software
 
-[WebLaunch](https://github.com/PaulFreund/WebLaunch) is a KUAL extension designed for the Kindle Touch. It opens a configured URL without the standard browser toolbar.
+[WebLaunch](https://github.com/PaulFreund/WebLaunch) is a KUAL extension designed for the Kindle Touch. On this device it runs the dashboard through Mesquite with no standard browser toolbar.
 
-Expected location:
+The app renders the widget content in `bin/` directly. `bin/start.sh` probes which bridge address is reachable (USB ethernet first, then LAN), rewrites `bin/dash.html` as a one-shot bootstrap page that redirects to `http://<bridge>:8787/?k=1`, and starts the app. From there the bridge page's own `<meta http-equiv="refresh">` keeps the screen updating — there is no launch-time snapshot.
 
-```text
-/mnt/us/extensions/WebLaunch/
-```
-
-Example `settings.js`. Replace the address with your own — find it with
-`ipconfig getifaddr en0`:
-
-```javascript
-var settings = {
-    url: 'http://192.168.0.10:8787/',
-    title: 'Ink Dashboard',
-    hideStatusbar: true,
-    enableWireless: true,
-    powerButtonClose: true,
-    enablePreventScreenSaver: true,
-    landscape: true
-};
-```
+The `?k=1` flag asks the bridge for the Kindle variant of the page: the 800 × 600 layout pre-scaled to 0.75 for the 600px-wide portrait screen.
 
 ## Prerequisites
 
